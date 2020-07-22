@@ -9,11 +9,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
-func main()  {
+func main() {
 	log := logrus.New()
 	log.SetOutput(os.Stdout)
 
@@ -31,7 +31,7 @@ func main()  {
 	})
 
 	serv := http.Server{
-		Addr: net.JoinHostPort("", port),
+		Addr:    net.JoinHostPort("", port),
 		Handler: router,
 	}
 
