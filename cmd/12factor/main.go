@@ -14,17 +14,20 @@ import (
 )
 
 func main()  {
-	logrus.Info("Hello world!")
+	log := logrus.New()
+	log.SetOutput(os.Stdout)
+
+	log.Info("Starting the app...")
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		logrus.Fatal("Port is not set")
+		log.Fatal("Port is not set")
 	}
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		logrus.Infof("Receive request from %v", r.RemoteAddr)
+		log.Infof("Receive request from %v", r.RemoteAddr)
 	})
 
 	serv := http.Server{
@@ -34,12 +37,21 @@ func main()  {
 
 	go serv.ListenAndServe()
 
+	log.Info("The app started")
+
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	<-interrupt
 
+	log.Info("Stopping app..")
+
 	timeout, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
-	serv.Shutdown(timeout)
+	err := serv.Shutdown(timeout)
+	if err != nil {
+		log.Error("Error when shutdown app: %v", err)
+	}
+
+	log.Info("The app stopped")
 }
