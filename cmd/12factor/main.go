@@ -35,9 +35,22 @@ func main() {
 		Handler: router,
 	}
 
-	go serv.ListenAndServe()
+	go func() {
+		log.Fatalf("WebServer internal Error: %v", serv.ListenAndServe())
+	}()
 
-	log.Info("The app started")
+	for {
+		conn, err := net.Dial("tcp", ":"+port)
+		if err != nil {
+			log.Infof("The app not started yet, wait 5 second. Error msg: %v", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		log.Info("The app started")
+		conn.Close()
+		break
+	}
+	//TODO дописать вывод информации об успешном запуске приложения log.Info("The app started"). Поправить успешный вывод проверки, если сервер запускается на уже использованном порте.
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
